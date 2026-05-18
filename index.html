@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SAMCAF</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5e6ca;
+color:#3e2723;
+}
+
+/* BOTON MENU */
+
+.menu-btn{
+position:fixed;
+top:20px;
+left:20px;
+background:#8d5b4c;
+color:white;
+border:none;
+padding:15px 20px;
+border-radius:15px;
+font-size:18px;
+cursor:pointer;
+z-index:1001;
+box-shadow:0 5px 15px rgba(0,0,0,.3);
+}
+
+/* SIDEBAR */
+
+.sidebar{
+position:fixed;
+left:-340px;
+top:0;
+width:340px;
+height:100%;
+background:#4e342e;
+color:white;
+padding:20px;
+overflow-y:auto;
+transition:.4s;
+z-index:1000;
+}
+
+.sidebar.active{
+left:0;
+}
+
+.sidebar h2{
+margin-bottom:20px;
+text-align:center;
+}
+
+.sidebar input,
+.sidebar select{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:10px;
+}
+
+.total{
+font-size:25px;
+font-weight:bold;
+margin-top:20px;
+text-align:center;
+}
+
+.sidebar button{
+width:100%;
+padding:15px;
+margin-top:15px;
+border:none;
+border-radius:12px;
+background:#d84315;
+color:white;
+font-size:18px;
+cursor:pointer;
+}
+
+.sidebar button:hover{
+background:#bf360c;
+}
+
+/* HEADER */
+
+header{
+background:#6d4c41;
+padding:40px;
+text-align:center;
+color:white;
+}
+
+header h1{
+font-size:60px;
+font-family:'Playfair Display',serif;
+letter-spacing:4px;
+}
+
+/* CONTENIDO */
+
+.container{
+padding:30px;
+}
+
+section{
+margin-top:50px;
+}
+
+section h2{
+font-size:35px;
+margin-bottom:20px;
+color:#5d4037;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:25px;
+}
+
+.card{
+background:white;
+border-radius:20px;
+overflow:hidden;
+box-shadow:0 5px 15px rgba(0,0,0,.2);
+}
+
+.card img{
+width:100%;
+height:220px;
+object-fit:cover;
+}
+
+.card-content{
+padding:15px;
+}
+
+.card h3{
+margin-bottom:10px;
+}
+
+.card p{
+font-size:14px;
+margin-bottom:10px;
+}
+
+.precio{
+font-size:22px;
+font-weight:bold;
+color:#d84315;
+margin-top:10px;
+}
+
+/* BOTONES + Y - */
+
+.controls{
+display:flex;
+justify-content:center;
+gap:10px;
+margin-top:15px;
+}
+
+.controls button{
+width:45px;
+height:45px;
+border:none;
+border-radius:50%;
+font-size:22px;
+background:#6d4c41;
+color:white;
+cursor:pointer;
+}
+
+.controls button:hover{
+background:#4e342e;
+}
+
+.transferencia,
+.cambio{
+display:none;
+margin-top:15px;
+background:#fff3e0;
+padding:10px;
+border-radius:10px;
+color:#3e2723;
+}
+
+</style>
+</head>
+
+<body>
+
+<button class="menu-btn" onclick="toggleMenu()">
+PEDIDO
+</button>
+
+<!-- SIDEBAR -->
+
+<div class="sidebar" id="sidebar">
+
+<h2>Pedido</h2>
+
+<input type="text" id="nombre" placeholder="Nombre del comprador">
+
+<input type="number" id="telefono" placeholder="Número telefónico">
+
+<input type="text" id="ubicacion" placeholder="Compartir ubicación / dirección">
+
+<select id="envio" onchange="calcularEnvio()">
+<option value="0">Envío cercano GRATIS</option>
+<option value="40">Envío rango medio +$40</option>
+<option value="80">Envío largo +$80</option>
+</select>
+
+<div id="listaPedidos"></div>
+
+<div class="total">
+Total: $<span id="total">0</span>
+</div>
+
+<select id="pago" onchange="mostrarPago()">
+<option value="">Forma de pago</option>
+<option value="efectivo">Efectivo</option>
+<option value="transferencia">Transferencia</option>
+</select>
+
+<div class="cambio" id="cambioBox">
+
+<input type="number" id="recibido" placeholder="Dinero recibido">
+
+<button onclick="calcularCambio()">
+Calcular Cambio
+</button>
+
+<p id="resultadoCambio"></p>
+
+</div>
+
+<div class="transferencia" id="transferenciaBox">
+
+<p><b>Banco:</b> BBVA</p>
+<p><b>Nombre:</b> SAMCAF</p>
+<p><b>CLABE:</b> 012345678901234567</p>
+
+<br>
+
+<p><b>Favor de mandar captura de pantalla</b></p>
+
+</div>
+
+<button onclick="enviarPedido()">
+Enviar Pedido
+</button>
+
+</div>
+
+<!-- HEADER -->
+
+<header>
+
+<h1>SAMCAF</h1>
+
+<p>Cafetería Vintage</p>
+
+</header>
+
+<div class="container">
+
+<!-- CALIENTES -->
+
+<section>
+
+<h2>Cafés Calientes</h2>
+
+<div class="grid">
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1511920170033-f8396924c348">
+<div class="card-content">
+<h3>Espresso</h3>
+<p>Café concentrado preparado con alta presión.</p>
+<p>Perfecto para energía rápida y sabor intenso.</p>
+<div class="precio">$45</div>
+
+<div class="controls">
+<button onclick="eliminar('Espresso',45)">-</button>
+<button onclick="agregar('Espresso',45)">+</button>
+</div>
+
+</div>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93">
+<div class="card-content">
+<h3>Capuccino</h3>
+<p>Espresso con espuma cremosa de leche.</p>
+<p>Ideal para disfrutar algo suave y elegante.</p>
+<div class="precio">$65</div>
+
+<div class="controls">
+<button onclick="eliminar('Capuccino',65)">-</button>
+<button onclick="agregar('Capuccino',65)">+</button>
+</div>
+
+</div>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085">
+<div class="card-content">
+<h3>Latte</h3>
+<p>Leche vaporizada con espresso artesanal.</p>
+<p>Excelente para quienes prefieren suavidad.</p>
+<div class="precio">$70</div>
+
+<div class="controls">
+<button onclick="eliminar('Latte',70)">-</button>
+<button onclick="agregar('Latte',70)">+</button>
+</div>
+
+</div>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735">
+<div class="card-content">
+<h3>Moka</h3>
+<p>Chocolate y espresso combinados.</p>
+<p>Ideal para amantes del cacao.</p>
+<div class="precio">$80</div>
+
+<div class="controls">
+<button onclick="eliminar('Moka',80)">-</button>
+<button onclick="agregar('Moka',80)">+</button>
+</div>
+
+</div>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1521302080334-4bebac2763a6">
+<div class="card-content">
+<h3>Americano</h3>
+<p>Espresso diluido en agua caliente.</p>
+<p>Perfecto para café tradicional.</p>
+<div class="precio">$50</div>
+
+<div class="controls">
+<button onclick="eliminar('Americano',50)">-</button>
+<button onclick="agregar('Americano',50)">+</button>
+</div>
+
+</div>
+</div>
+
+</div>
+
+</section>
+
+<!-- FRAPES -->
+
+<section>
+
+<h2>Frappés</h2>
+
+<div class="grid">
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1517701604599-bb29b565090c">
+<div class="card-content">
+<h3>Frappé Moka</h3>
+<p>Hielo frappé con café y chocolate.</p>
+<p>Ideal para refrescarte.</p>
+<div class="precio">$95</div>
+
+<div class="controls">
+<button onclick="eliminar('Frappé Moka',95)">-</button>
+<button onclick="agregar('Frappé Moka',95)">+</button>
+</div>
+
+</div>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1515823064-d6e0c04616a7">
+<div class="card-content">
+<h3>Frappé Caramelo</h3>
+<p>Bebida fría con caramelo dulce.</p>
+<p>Perfecto para gustos suaves.</p>
+<div class="precio">$95</div>
+
+<div class="controls">
+<button onclick="eliminar('Frappé Caramelo',95)">-</button>
+<button onclick="agregar('Frappé Caramelo',95)">+</button>
+</div>
+
+</div>
+</div>
+
+</div>
+
+</section>
+
+</div>
+
+<script>
+
+let pedidos={};
+let total=0;
+let envioExtra=0;
+
+function toggleMenu(){
+
+document.getElementById("sidebar").classList.toggle("active");
+
+}
+
+function agregar(nombre,precio){
+
+if(!pedidos[nombre]){
+
+pedidos[nombre]={cantidad:0,precio:precio};
+
+}
+
+pedidos[nombre].cantidad++;
+
+actualizar();
+
+}
+
+function eliminar(nombre,precio){
+
+if(pedidos[nombre]){
+
+pedidos[nombre].cantidad--;
+
+if(pedidos[nombre].cantidad<=0){
+
+delete pedidos[nombre];
+
+}
+
+}
+
+actualizar();
+
+}
+
+function calcularEnvio(){
+
+envioExtra=parseFloat(document.getElementById("envio").value);
+
+actualizar();
+
+}
+
+function actualizar(){
+
+let html="";
+
+total=0;
+
+for(let item in pedidos){
+
+let subtotal=pedidos[item].cantidad*pedidos[item].precio;
+
+total+=subtotal;
+
+html+=`
+<p>
+${item} x${pedidos[item].cantidad}
+- $${subtotal}
+</p>
+`;
+
+}
+
+total+=envioExtra;
+
+document.getElementById("listaPedidos").innerHTML=html;
+
+document.getElementById("total").innerText=total;
+
+}
+
+function mostrarPago(){
+
+let metodo=document.getElementById("pago").value;
+
+document.getElementById("transferenciaBox").style.display="none";
+document.getElementById("cambioBox").style.display="none";
+
+if(metodo=="transferencia"){
+
+document.getElementById("transferenciaBox").style.display="block";
+
+}
+
+if(metodo=="efectivo"){
+
+document.getElementById("cambioBox").style.display="block";
+
+}
+
+}
+
+function calcularCambio(){
+
+let recibido=parseFloat(document.getElementById("recibido").value);
+
+let cambio=recibido-total;
+
+document.getElementById("resultadoCambio").innerHTML=
+"Cambio: $" + cambio.toFixed(2);
+
+}
+
+function enviarPedido(){
+
+let nombre=document.getElementById("nombre").value;
+
+let telefono=document.getElementById("telefono").value;
+
+let ubicacion=document.getElementById("ubicacion").value;
+
+let metodo=document.getElementById("pago").value;
+
+let lista="";
+
+for(let item in pedidos){
+
+lista+=`${item} x${pedidos[item].cantidad}\n`;
+
+}
+
+let mensaje=`
+NUEVO PEDIDO SAMCAF
+
+Cliente: ${nombre}
+
+Telefono: ${telefono}
+
+Ubicacion:
+${ubicacion}
+
+Pedido:
+${lista}
+
+Total:
+$${total}
+
+Pago:
+${metodo}
+
+Pagina:
+https://samcaf.pages.dev/
+`;
+
+let url=`https://wa.me/527712343532?text=${encodeURIComponent(mensaje)}`;
+
+window.open(url,"_blank");
+
+}
+
+</script>
+
+</body>
+</html>
