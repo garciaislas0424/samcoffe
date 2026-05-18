@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SAMCAF</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:#f5e6ca;
+font-family:'Poppins',sans-serif;
+color:#3e2723;
+}
+
+/* HEADER */
+
+header{
+background:#5d4037;
+padding:35px;
+text-align:center;
+color:white;
+box-shadow:0 5px 15px rgba(0,0,0,.2);
+}
+
+header h1{
+font-family:'Playfair Display',serif;
+font-size:60px;
+letter-spacing:5px;
+}
+
+header p{
+font-size:20px;
+margin-top:10px;
+}
+
+/* BOTON PEDIDO */
+
+.btn-pedido{
+position:fixed;
+top:20px;
+left:20px;
+z-index:1001;
+border:none;
+background:#d84315;
+color:white;
+padding:15px 22px;
+border-radius:15px;
+font-size:18px;
+cursor:pointer;
+box-shadow:0 5px 15px rgba(0,0,0,.3);
+}
+
+/* PANEL */
+
+.panel{
+position:fixed;
+top:0;
+left:-390px;
+width:390px;
+height:100%;
+background:white;
+z-index:1000;
+transition:.4s;
+overflow-y:auto;
+padding:20px;
+box-shadow:0 0 20px rgba(0,0,0,.3);
+}
+
+.panel.active{
+left:0;
+}
+
+.panel h2{
+text-align:center;
+margin-bottom:20px;
+font-size:35px;
+}
+
+/* INPUTS */
+
+.panel input,
+.panel select{
+width:100%;
+padding:14px;
+margin-top:12px;
+border-radius:12px;
+border:1px solid #ccc;
+font-size:16px;
+}
+
+/* TICKET */
+
+.ticket{
+background:#fff8f0;
+padding:15px;
+border-radius:15px;
+margin-top:20px;
+}
+
+.ticket-item{
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+font-size:16px;
+}
+
+.total{
+font-size:30px;
+font-weight:bold;
+text-align:center;
+margin-top:20px;
+color:#d84315;
+}
+
+/* BOTONES */
+
+.panel button{
+width:100%;
+padding:15px;
+margin-top:15px;
+border:none;
+border-radius:12px;
+font-size:18px;
+cursor:pointer;
+}
+
+.enviar{
+background:#25D366;
+color:white;
+}
+
+.vaciar{
+background:#6d4c41;
+color:white;
+}
+
+.generar{
+background:#d84315;
+color:white;
+}
+
+.gps{
+background:#1976d2;
+color:white;
+}
+
+/* PRODUCTOS */
+
+.container{
+padding:30px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:25px;
+}
+
+.card{
+background:white;
+border-radius:20px;
+overflow:hidden;
+box-shadow:0 5px 15px rgba(0,0,0,.2);
+transition:.4s;
+}
+
+.card:hover{
+transform:translateY(-8px);
+}
+
+.card img{
+width:100%;
+height:220px;
+object-fit:cover;
+transition:.5s;
+}
+
+.card:hover img{
+transform:scale(1.08);
+}
+
+.card-content{
+padding:18px;
+}
+
+.card h3{
+font-size:26px;
+}
+
+.card p{
+margin-top:10px;
+line-height:1.5;
+}
+
+.precio{
+font-size:28px;
+font-weight:bold;
+margin-top:15px;
+color:#d84315;
+}
+
+/* CONTROLES */
+
+.controls{
+display:flex;
+justify-content:center;
+gap:15px;
+margin-top:20px;
+}
+
+.controls button{
+width:50px;
+height:50px;
+border:none;
+border-radius:50%;
+font-size:25px;
+background:#6d4c41;
+color:white;
+cursor:pointer;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:500px){
+
+.panel{
+width:100%;
+left:-100%;
+}
+
+header h1{
+font-size:45px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- BOTON -->
+
+<button class="btn-pedido" onclick="togglePanel()">
+PEDIDO
+</button>
+
+<!-- PANEL -->
+
+<div class="panel" id="panel">
+
+<h2>SAMCAF</h2>
+
+<input type="text" id="nombre" placeholder="Nombre del cliente">
+
+<input type="number" id="telefono" placeholder="Número telefónico">
+
+<select id="envio" onchange="mostrarUbicacion()">
+
+<option value="0">
+Recogo en tienda aprox 30 mnts
+</option>
+
+<option value="40">
+Envío medio +$40
+</option>
+
+<option value="80">
+Envío largo +$80
+</option>
+
+</select>
+
+<div id="ubicacionBox" style="display:none;">
+
+<input 
+type="text" 
+id="ubicacion" 
+placeholder="EJ. Puerta,Reja, N#, etc."
+>
+
+<button 
+type="button"
+class="gps"
+onclick="obtenerUbicacion()">
+Compartir Ubicación
+</button>
+
+</div>
+
+<select id="pago">
+
+<option value="">
+Método de pago
+</option>
+
+<option>
+Efectivo
+</option>
+
+<option>
+Transferencia
+</option>
+
+</select>
+
+<input 
+type="number" 
+id="pagaCon" 
+placeholder="Pago con..."
+oninput="calcularCambio()"
+>
+
+<div class="ticket">
+
+<p>
+Cambio:
+<b>
+$<span id="cambio">0</span>
+</b>
+</p>
+
+</div>
+
+<!-- TICKET -->
+
+<div class="ticket" id="ticket">
+
+<p>
+Sin productos
+</p>
+
+</div>
+
+<div class="total">
+
+$<span id="total">0</span>
+
+</div>
+
+<button class="generar" onclick="generarTicket()">
+Generar Ticket
+</button>
+
+<div class="ticket" id="ticketFinal" style="display:none;">
+
+</div>
+
+<button class="vaciar" onclick="vaciarPedido()">
+Vaciar Pedido
+</button>
+
+<button class="enviar" onclick="enviarPedido()">
+Enviar Pedido
+</button>
+
+</div>
+
+<!-- HEADER -->
+
+<header>
+
+<h1>SAMCAF</h1>
+
+<p>Cafetería & Snacks</p>
+
+</header>
+
+<!-- PRODUCTOS -->
+
+<div class="container">
+
+<div class="grid">
+
+<!-- PRODUCTO -->
+
+<div class="card">
+
+<img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085">
+
+<div class="card-content">
+
+<h3>Latte</h3>
+
+<p>
+Café espresso con leche cremosa vaporizada.
+</p>
+
+<div class="precio">
+$70
+</div>
+
+<div class="controls">
+
+<button onclick="eliminar('Latte')">
+-
+</button>
+
+<button onclick="agregar('Latte',70)">
++
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- PRODUCTO -->
+
+<div class="card">
+
+<img src="https://images.unsplash.com/photo-1517701604599-bb29b565090c">
+
+<div class="card-content">
+
+<h3>Frappé Oreo</h3>
+
+<p>
+Bebida fría con café y galleta Oreo.
+</p>
+
+<div class="precio">
+$95
+</div>
+
+<div class="controls">
+
+<button onclick="eliminar('Frappé Oreo')">
+-
+</button>
+
+<button onclick="agregar('Frappé Oreo',95)">
++
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- PRODUCTO -->
+
+<div class="card">
+
+<img src="https://images.unsplash.com/photo-1550547660-d9450f859349">
+
+<div class="card-content">
+
+<h3>Hamburguesa</h3>
+
+<p>
+Carne artesanal con queso y vegetales.
+</p>
+
+<div class="precio">
+$120
+</div>
+
+<div class="controls">
+
+<button onclick="eliminar('Hamburguesa')">
+-
+</button>
+
+<button onclick="agregar('Hamburguesa',120)">
++
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- PRODUCTO -->
+
+<div class="card">
+
+<img src="https://images.unsplash.com/photo-1512152272829-e3139592d56f">
+
+<div class="card-content">
+
+<h3>Papas</h3>
+
+<p>
+Papas crujientes recién preparadas.
+</p>
+
+<div class="precio">
+$75
+</div>
+
+<div class="controls">
+
+<button onclick="eliminar('Papas')">
+-
+</button>
+
+<button onclick="agregar('Papas',75)">
++
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let pedidos={};
+
+function togglePanel(){
+
+document.getElementById("panel").classList.toggle("active");
+
+}
+
+function agregar(nombre,precio){
+
+if(!pedidos[nombre]){
+
+pedidos[nombre]={
+cantidad:0,
+precio:precio
+};
+
+}
+
+pedidos[nombre].cantidad++;
+
+actualizarTotal();
+
+}
+
+function eliminar(nombre){
+
+if(pedidos[nombre]){
+
+pedidos[nombre].cantidad--;
+
+if(pedidos[nombre].cantidad<=0){
+
+delete pedidos[nombre];
+
+}
+
+}
+
+actualizarTotal();
+
+}
+
+function mostrarUbicacion(){
+
+let envio=document.getElementById("envio").value;
+
+if(envio=="0"){
+
+document.getElementById("ubicacionBox").style.display="none";
+
+}else{
+
+document.getElementById("ubicacionBox").style.display="block";
+
+}
+
+actualizarTotal();
+
+}
+
+function obtenerUbicacion(){
+
+if(navigator.geolocation){
+
+navigator.geolocation.getCurrentPosition(
+
+function(position){
+
+let lat=position.coords.latitude;
+
+let lon=position.coords.longitude;
+
+let link=`https://maps.google.com/?q=${lat},${lon}`;
+
+document.getElementById("ubicacion").value=link;
+
+alert("Ubicación compartida correctamente");
+
+},
+
+function(){
+
+alert("No se pudo obtener la ubicación");
+
+}
+
+);
+
+}else{
+
+alert("Tu navegador no permite geolocalización");
+
+}
+
+}
+
+function actualizarTotal(){
+
+let ticket=document.getElementById("ticket");
+
+let total=0;
+
+let html="";
+
+for(let item in pedidos){
+
+let subtotal=pedidos[item].cantidad * pedidos[item].precio;
+
+total+=subtotal;
+
+html+=`
+<div class="ticket-item">
+
+<span>
+${item} x${pedidos[item].cantidad}
+</span>
+
+<span>
+$${subtotal}
+</span>
+
+</div>
+`;
+
+}
+
+let envio=parseFloat(
+document.getElementById("envio").value
+);
+
+total+=envio;
+
+if(html==""){
+
+html="<p>Sin productos</p>";
+
+}
+
+ticket.innerHTML=html;
+
+document.getElementById("total").innerText=total;
+
+calcularCambio();
+
+}
+
+function calcularCambio(){
+
+let total=parseFloat(
+document.getElementById("total").innerText
+);
+
+let pagaCon=parseFloat(
+document.getElementById("pagaCon").value
+) || 0;
+
+let cambio=pagaCon-total;
+
+document.getElementById("cambio").innerText=
+cambio.toFixed(2);
+
+}
+
+function vaciarPedido(){
+
+pedidos={};
+
+actualizarTotal();
+
+document.getElementById("ticketFinal").style.display="none";
+
+}
+
+function generarTicket(){
+
+let nombre=document.getElementById("nombre").value;
+
+let telefono=document.getElementById("telefono").value;
+
+let ubicacion=document.getElementById("ubicacion").value;
+
+let pago=document.getElementById("pago").value;
+
+let total=document.getElementById("total").innerText;
+
+let cambio=document.getElementById("cambio").innerText;
+
+let fecha=new Date();
+
+let folio=Math.floor(Math.random()*999999);
+
+let lista="";
+
+for(let item in pedidos){
+
+lista+=`
+<p>
+${item} x${pedidos[item].cantidad}
+</p>
+`;
+
+}
+
+document.getElementById("ticketFinal").style.display="block";
+
+document.getElementById("ticketFinal").innerHTML=`
+
+<h3 style="text-align:center;">
+SAMCAF
+</h3>
+
+<hr><br>
+
+<p>
+<b>Folio:</b> #${folio}
+</p>
+
+<p>
+<b>Fecha:</b>
+${fecha.toLocaleDateString()}
+</p>
+
+<p>
+<b>Hora:</b>
+${fecha.toLocaleTimeString()}
+</p>
+
+<br><hr><br>
+
+<p>
+<b>Cliente:</b>
+${nombre}
+</p>
+
+<p>
+<b>Telefono:</b>
+${telefono}
+</p>
+
+<p>
+<b>Ubicacion:</b>
+${ubicacion || "Recoge en tienda"}
+</p>
+
+<br><hr><br>
+
+${lista}
+
+<br><hr><br>
+
+<p>
+<b>Total:</b> $${total}
+</p>
+
+<p>
+<b>Paga con:</b>
+$${document.getElementById("pagaCon").value || 0}
+</p>
+
+<p>
+<b>Cambio:</b>
+$${cambio}
+</p>
+
+<p>
+<b>Pago:</b>
+${pago}
+</p>
+
+<br><hr><br>
+
+<p style="text-align:center;">
+Gracias por tu compra ☕
+</p>
+
+`;
+
+}
+
+function enviarPedido(){
+
+let nombre=document.getElementById("nombre").value;
+
+let telefono=document.getElementById("telefono").value;
+
+let ubicacion=document.getElementById("ubicacion").value;
+
+let pago=document.getElementById("pago").value;
+
+let total=document.getElementById("total").innerText;
+
+let cambio=document.getElementById("cambio").innerText;
+
+let fecha=new Date();
+
+let folio=Math.floor(Math.random()*999999);
+
+let lista="";
+
+for(let item in pedidos){
+
+lista+=`${item} x${pedidos[item].cantidad}\n`;
+
+}
+
+let mensaje=`
+NUEVO PEDIDO SAMCAF
+
+Folio: #${folio}
+
+Fecha:
+${fecha.toLocaleDateString()}
+
+Hora:
+${fecha.toLocaleTimeString()}
+
+Cliente:
+${nombre}
+
+Telefono:
+${telefono}
+
+Ubicacion:
+${ubicacion || "Recoge en tienda"}
+
+Pedido:
+${lista}
+
+Total:
+$${total}
+
+Paga con:
+$${document.getElementById("pagaCon").value || 0}
+
+Cambio:
+$${cambio}
+
+Pago:
+${pago}
+
+Pagina:
+https://samcaf.pages.dev/
+`;
+
+let url=`https://wa.me/527712343532?text=${encodeURIComponent(mensaje)}`;
+
+window.open(url,"_blank");
+
+}
+
+</script>
+
+</body>
+</html>
